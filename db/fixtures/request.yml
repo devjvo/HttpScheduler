@@ -1,0 +1,7 @@
+- id: 019731d6-47b9-7944-82c4-9555c7ee9f43
+  http_method: GET
+  url: http://foo/foo
+
+- id: 019731f7-8855-7887-9058-190d64221c7b
+  http_method: POST
+  url: http://foo/bar
