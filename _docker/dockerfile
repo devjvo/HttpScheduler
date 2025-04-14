@@ -1,0 +1,11 @@
+FROM golang:1.24.1-alpine3.21
+
+WORKDIR /app
+
+RUN apk add --no-cache curl tar
+
+# live reload
+RUN go install github.com/air-verse/air@latest
+
+# database migrations
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.2/migrate.linux-amd64.tar.gz | tar xvz -C /usr/local/bin
