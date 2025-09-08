@@ -25,6 +25,7 @@ services:
         aliases:
           - local_application
     volumes:
-      - /home/jvo/private/HttpScheduler/:/app 
+      - ${HOME}/personnal/HttpScheduler/:/app 
     tty: true
     command: /bin/sh /app/src/Api/_bootstrap/boot_api.sh
+    env_file: ".env"

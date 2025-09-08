@@ -24,21 +24,21 @@ func Init() {
 
 func Up() error {
 	return execute(
-		exec.Command("docker-compose", "-f", "docker-compose.yaml", "up", "-d"),
+		exec.Command("docker", "compose", "-f", "docker-compose.yaml", "up", "-d"),
 		"Up containers...",
 	)
 }
 
 func Down() error {
 	return execute(
-		exec.Command("docker-compose", "-f", "docker-compose.yaml", "down"),
+		exec.Command("docker", "compose", "-f", "docker-compose.yaml", "down"),
 		"Down containers...",
 	)
 }
 
 func Ps() error {
 	return execute(
-		exec.Command("docker-compose", "-f", "docker-compose.yaml", "ps"),
+		exec.Command("docker", "compose", "-f", "docker-compose.yaml", "ps"),
 		"",
 	)
 }
@@ -140,7 +140,7 @@ func LoadFixtures() error {
 
 func Shell() error {
 
-	cmd := exec.Command("docker-compose", "exec", "api", "sh")
+	cmd := exec.Command("docker", "compose", "exec", "api", "sh")
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
