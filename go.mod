@@ -11,5 +11,6 @@ require (
 
 require (
 	github.com/goccy/go-yaml v1.17.1 // indirect
+	github.com/gorilla/mux v1.8.1 // indirect
 	golang.org/x/sync v0.13.0 // indirect
 )

@@ -3,14 +3,16 @@ package main
 import (
 	"HttpScheduler/src/Api/Ui/Http/Controller"
 	security "HttpScheduler/src/Api/Ui/Http/Security"
-	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
 	basicAuthChecker := security.NewBasicAuthChecker()
+	router := mux.NewRouter()
 
-	http.HandleFunc(
+	router.HandleFunc(
 		"/v1/healthcheck",
 		basicAuthChecker.Middleware(
 			func(response http.ResponseWriter, request *http.Request) {
@@ -22,7 +24,7 @@ func main() {
 				response.WriteHeader(http.StatusMethodNotAllowed)
 			}))
 
-	http.HandleFunc(
+	router.HandleFunc(
 		"/v1/request",
 		basicAuthChecker.Middleware(
 			func(response http.ResponseWriter, request *http.Request) {
@@ -34,6 +36,5 @@ func main() {
 				response.WriteHeader(http.StatusMethodNotAllowed)
 			}))
 
-	log.Println("Server is running on port 8080...")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	http.ListenAndServe(":8080", router)
 }
