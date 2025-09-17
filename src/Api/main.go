@@ -36,5 +36,17 @@ func main() {
 				response.WriteHeader(http.StatusMethodNotAllowed)
 			}))
 
+	router.HandleFunc(
+		"/v1/request/{id:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}}",
+		basicAuthChecker.Middleware(
+			func(response http.ResponseWriter, request *http.Request) {
+				if request.Method == http.MethodGet {
+					Controller.NewRequestController().GetRequest(response, request)
+					return
+				}
+
+				response.WriteHeader(http.StatusMethodNotAllowed)
+			}))
+
 	http.ListenAndServe(":8080", router)
 }

@@ -2,6 +2,7 @@ package Controller
 
 import (
 	entity "HttpScheduler/src/Api/Domain/Entity"
+	factory "HttpScheduler/src/Api/Infrastructure/Factory"
 	repository "HttpScheduler/src/Api/Infrastructure/Repository"
 	"encoding/json"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 type ResponseRequestList struct {
@@ -17,10 +19,45 @@ type ResponseRequestList struct {
 	NextCursor *string          `json:"nextCursor"`
 }
 
-type RequestController struct{}
+type RequestController struct {
+	uuidFactory factory.UuidFactory
+}
 
 func NewRequestController() *RequestController {
-	return &RequestController{}
+	return &RequestController{
+		uuidFactory: *factory.NewUuidFactory(),
+	}
+}
+
+func (r *RequestController) GetRequest(response http.ResponseWriter, request *http.Request) error {
+	response.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	cursorRaw := mux.Vars(request)["id"]
+	cursor, err := r.uuidFactory.CreateFromString(cursorRaw)
+
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(response).Encode(map[string]string{
+			"error": fmt.Sprintf("cursor is an invalid uuid: %s", err),
+		})
+
+		return nil
+	}
+
+	scheduledRequest := repository.NewRequestRepository().Get(cursor)
+
+	if scheduledRequest == nil {
+		response.WriteHeader(http.StatusNotFound)
+		return nil
+	}
+
+	if err := json.NewEncoder(response).Encode(scheduledRequest); err != nil {
+		message := fmt.Sprintf("unable to encode request list to json. error: %s", err.Error())
+		slog.Error(message)
+		panic(message)
+	}
+
+	return nil
 }
 
 func (r *RequestController) ListRequest(response http.ResponseWriter, request *http.Request) error {
@@ -41,21 +78,12 @@ func (r *RequestController) ListRequest(response http.ResponseWriter, request *h
 	cursor := uuid.Nil
 
 	if cursorRaw != "" {
-		parsedCursor, err := uuid.Parse(cursorRaw)
+		parsedCursor, err := r.uuidFactory.CreateFromString(cursorRaw)
 
 		if err != nil {
 			response.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(response).Encode(map[string]string{
-				"error": fmt.Sprintf("cursor is an invalid uuid: %s", cursorRaw),
-			})
-
-			return nil
-		}
-
-		if parsedCursor.Version() != 7 {
-			response.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(response).Encode(map[string]string{
-				"error": fmt.Sprintf("cursor is uuid but must be v7: %s", cursorRaw),
+				"error": fmt.Sprintf("cursor is an invalid uuid. %s", err),
 			})
 
 			return nil
@@ -69,7 +97,7 @@ func (r *RequestController) ListRequest(response http.ResponseWriter, request *h
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(response).Encode(map[string]string{
-			"error": fmt.Sprintf("limit is an invalid integer: %s", request.Form.Get("limit")),
+			"error": fmt.Sprintf("limit is an invalid integer. %s", request.Form.Get("limit")),
 		})
 
 		return nil
