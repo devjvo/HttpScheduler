@@ -154,6 +154,13 @@ func Shell() error {
 	return nil
 }
 
+func Log() error {
+	return execute(
+		exec.Command("docker", "compose", "logs", "-f", os.Args[2]),
+		"",
+	)
+}
+
 func execute(commandToExec *exec.Cmd, message string) error {
 	if message != "" {
 		fmt.Println("*****")
