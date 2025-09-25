@@ -39,7 +39,9 @@ func (r *RequestRepository) Get(id uuid.UUID) *entity.Request {
 	return &request
 }
 
-func (r *RequestRepository) ListRequest(cursor uuid.UUID, limit int64) []entity.Request {
+func (r *RequestRepository) ListRequest(cursor uuid.UUID, limit int64) ([]entity.Request, error) {
+	var requestList []entity.Request
+
 	rows, err := r.db.Query(
 		`SELECT id, created_at, http_method, url, response_code
 		FROM request
@@ -51,24 +53,22 @@ func (r *RequestRepository) ListRequest(cursor uuid.UUID, limit int64) []entity.
 	)
 
 	if err != nil {
-		message := fmt.Sprintf("unable to select request entity. error: %s", err.Error())
-		slog.Error(message)
-		panic(message)
-	}
+		slog.Error(fmt.Sprintf("unable to select request entity. error: %s", err.Error()))
 
-	var requestList []entity.Request
+		return requestList, err
+	}
 
 	for rows.Next() {
 		var request entity.Request
 
 		if err := rows.Scan(&request.Id, &request.CreatedAt, &request.HttpMethod, &request.Url, &request.ResponseCode); err != nil {
-			message := fmt.Sprintf("unable to scan request entity. error: %s", err.Error())
-			slog.Error(message)
-			panic(message)
+			slog.Error(fmt.Sprintf("unable to scan request entity. error: %s", err.Error()))
+
+			return requestList, nil
 		}
 
 		requestList = append(requestList, request)
 	}
 
-	return requestList
+	return requestList, nil
 }

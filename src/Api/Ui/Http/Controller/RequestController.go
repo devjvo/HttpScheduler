@@ -103,7 +103,12 @@ func (r *RequestController) ListRequest(response http.ResponseWriter, request *h
 		return nil
 	}
 
-	requestList := repository.NewRequestRepository().ListRequest(cursor, limit+1)
+	requestList, err := repository.NewRequestRepository().ListRequest(cursor, limit+1)
+
+	if err != nil {
+		panic(err)
+	}
+
 	var nextCursor *string
 
 	if len(requestList) > int(limit) {
